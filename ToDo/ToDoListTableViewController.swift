@@ -21,10 +21,6 @@ class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - Add Item
     
     @IBAction func addButtonPressed(_ sender: UIButton) {
-        showAddAlert()
-    }
-    
-    func showAddAlert() {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
         alert.title = "Add new item"
         alert.addTextField { textField in
@@ -68,7 +64,6 @@ class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = items[indexPath.row]
-        item.done.toggle()
         update(item)
         tableView.reloadData()
     }
@@ -99,6 +94,7 @@ class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
     }
     
     func update(_ item: Item) {
+        item.done.toggle()
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let managedContext = appDelegate.persistentContainer.viewContext
         let objectID = item.objectID

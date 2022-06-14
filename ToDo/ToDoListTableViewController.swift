@@ -94,8 +94,8 @@ class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
             return items
         } catch {
             print(error)
+            return []
         }
-        return []
     }
     
     func update(_ item: Item) {

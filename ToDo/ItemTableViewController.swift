@@ -8,12 +8,23 @@
 import UIKit
 import CoreData
 
-class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
+class ItemTableViewController: UITableViewController, UITextFieldDelegate {
     
     var items = [Item]()
+    var category: Category
+    
+init?(coder: NSCoder, category: Category) {
+    self.category = category
+    super.init(coder: coder)
+}
 
+required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+}
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = category.name
         items = read()
         tableView.reloadData()
     }
@@ -76,6 +87,7 @@ class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
         let newItem = Item(context: managedContext)
         newItem.title = title
         newItem.done = false
+        newItem.category = category
         items.append(newItem)
         appDelegate.saveContext()
     }
@@ -84,6 +96,7 @@ class ToDoListTableViewController: UITableViewController, UITextFieldDelegate {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
         let managedContext = appDelegate.persistentContainer.viewContext
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Item")
+        fetchRequest.predicate = NSPredicate(format: "category = %@", category.objectID)
         do {
             let items = try managedContext.fetch(fetchRequest) as! [Item]
             return items

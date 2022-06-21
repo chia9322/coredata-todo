@@ -13,14 +13,14 @@ class ItemTableViewController: UITableViewController, UITextFieldDelegate {
     var items = [Item]()
     var category: Category
     
-init?(coder: NSCoder, category: Category) {
-    self.category = category
-    super.init(coder: coder)
-}
+    init?(coder: NSCoder, category: Category) {
+        self.category = category
+        super.init(coder: coder)
+    }
 
-required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-}
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

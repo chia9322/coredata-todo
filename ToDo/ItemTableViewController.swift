@@ -10,11 +10,13 @@ import CoreData
 
 class ItemTableViewController: UITableViewController, UITextFieldDelegate {
     
+    var container: NSPersistentContainer
     var items = [Item]()
     var category: Category
     
-    init?(coder: NSCoder, category: Category) {
+    init?(coder: NSCoder, category: Category, container: NSPersistentContainer) {
         self.category = category
+        self.container = container
         super.init(coder: coder)
     }
 
@@ -25,8 +27,7 @@ class ItemTableViewController: UITableViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = category.name
-        items = read()
-        tableView.reloadData()
+        read()
     }
     
     // MARK: - Add Item
@@ -82,49 +83,44 @@ class ItemTableViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - CoreData CRUD
     
     func create(_ title: String) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let newItem = Item(context: managedContext)
+        let context = container.viewContext
+        let newItem = Item(context: context)
         newItem.title = title
         newItem.done = false
         newItem.category = category
         items.append(newItem)
-        appDelegate.saveContext()
+        container.saveContext()
     }
     
-    func read() -> [Item] {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Item")
+    func read() {
+        let context = container.viewContext
+        let fetchRequest = Item.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "category = %@", category.objectID)
         do {
-            let items = try managedContext.fetch(fetchRequest) as! [Item]
-            return items
+            items = try context.fetch(fetchRequest)
+            tableView.reloadData()
         } catch {
             print(error)
-            return []
         }
     }
     
     func update(_ item: Item) {
         item.done.toggle()
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let managedContext = appDelegate.persistentContainer.viewContext
+        let context = container.viewContext
         let objectID = item.objectID
         do {
-            let object = try managedContext.existingObject(with: objectID)
+            let object = try context.existingObject(with: objectID)
             object.setValue(item.done, forKey: "done")
-            appDelegate.saveContext()
+            container.saveContext()
         } catch {
             print(error)
         }
     }
     
     func delete(_ item: Item) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        managedContext.delete(item)
-        appDelegate.saveContext()
+        let context = container.viewContext
+        context.delete(item)
+        container.saveContext()
     }
 
 }

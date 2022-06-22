@@ -10,12 +10,12 @@ import CoreData
 
 class CategoryTableViewController: UITableViewController, UITextFieldDelegate {
     
+    var container: NSPersistentContainer!
     var categories = [Category]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        categories = read()
-        tableView.reloadData()
+        read()
     }
     
     // MARK: - Add Category
@@ -64,37 +64,32 @@ class CategoryTableViewController: UITableViewController, UITextFieldDelegate {
     // MARK: - Core Data CRUD
     
     func create(_ name: String) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let newCategory = Category(context: managedContext)
+        let context = container.viewContext
+        let newCategory = Category(context: context)
         newCategory.name = name
         categories.append(newCategory)
-        appDelegate.saveContext()
+        container.saveContext()
     }
     
-    func read() -> [Category] {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return [] }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Category")
+    func read() {
+        let context = container.viewContext
         do {
-            let categories = try managedContext.fetch(fetchRequest) as! [Category]
-            return categories
+            categories = try context.fetch(Category.fetchRequest())
+            tableView.reloadData()
         } catch {
-            print(error)
-            return []
+            print("error")
         }
     }
     
     func delete(_ category: Category) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        managedContext.delete(category)
-        appDelegate.saveContext()
+        let context = container.viewContext
+        context.delete(category)
+        container.saveContext()
     }
     
     // MARK: - Segue
 
-@IBSegueAction func showItems(_ coder: NSCoder) -> ItemTableViewController? {
-    return ItemTableViewController(coder: coder, category: categories[tableView.indexPathForSelectedRow!.row])
-}
+    @IBSegueAction func showItems(_ coder: NSCoder) -> ItemTableViewController? {
+        return ItemTableViewController(coder: coder, category: categories[tableView.indexPathForSelectedRow!.row], container: container)
+    }
 }

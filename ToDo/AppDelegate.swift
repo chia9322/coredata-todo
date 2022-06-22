@@ -79,3 +79,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+extension NSPersistentContainer {
+    func saveContext() {
+        if viewContext.hasChanges {
+            do {
+                try viewContext.save()
+            } catch {
+                let nserror = error as NSError
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+            }
+        }
+    }
+}
+
